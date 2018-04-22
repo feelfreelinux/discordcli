@@ -11,6 +11,7 @@ InputView shows message input
 type InputView struct {
 	gui     *gocui.Gui
 	session *discordgo.Session
+	state   *State
 }
 
 func (iv *InputView) render() error {
@@ -31,6 +32,22 @@ func (iv *InputView) render() error {
 	return nil
 }
 
+func (iv *InputView) sendMessage(g *gocui.Gui, v *gocui.View) error {
+	v, err := g.View(inputView)
+	if err != nil {
+		return err
+	}
+
+	_, err = iv.session.ChannelMessageSend(iv.state.currentChannel.ID, v.Buffer())
+	v.Clear()
+	v.SetCursor(0, 0)
+	v.SetOrigin(0, 0)
+	return err
+}
+
 func (iv *InputView) bindKeys() error {
+	if err := iv.gui.SetKeybinding(inputView, gocui.KeyEnter, gocui.ModNone, iv.sendMessage); err != nil {
+		return err
+	}
 	return nil
 }

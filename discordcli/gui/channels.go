@@ -13,6 +13,7 @@ ChannelsView shows list of channels in current server
 type ChannelsView struct {
 	gui     *gocui.Gui
 	session *discordgo.Session
+	state   *State
 }
 
 func (cv *ChannelsView) render() error {

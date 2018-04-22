@@ -13,6 +13,7 @@ MessagesView shows messages in current selected channel
 type MessagesView struct {
 	gui     *gocui.Gui
 	session *discordgo.Session
+	state   *State
 }
 
 func (mv *MessagesView) render() error {
@@ -21,8 +22,8 @@ func (mv *MessagesView) render() error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
+		v.Wrap = true
 		v.Autoscroll = true
-
 	}
 	return nil
 }
@@ -33,8 +34,8 @@ func (mv *MessagesView) showMessages(messages []*discordgo.Message) error {
 		if err != nil {
 			return err
 		}
-		for _, message := range messages {
-			fmt.Fprintln(v, formatMessage(message))
+		for i := len(messages) - 1; i >= 0; i-- {
+			fmt.Fprintln(v, formatMessage(messages[i]))
 		}
 		return nil
 	})

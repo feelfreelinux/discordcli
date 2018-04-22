@@ -20,6 +20,7 @@ type MainView struct {
 	channels *ChannelsView
 	messages *MessagesView
 	input    *InputView
+	state    *State
 }
 
 func (mv *MainView) layout(g *gocui.Gui) error {
@@ -37,20 +38,28 @@ func (mv *MainView) layout(g *gocui.Gui) error {
 	return nil
 }
 
+/*
+CreateMainView creates MainView and all of its child views
+*/
 func CreateMainView(dgsession *discordgo.Session, ui *gocui.Gui) error {
 	ui.Cursor = true
+	var state = &State{}
 	var mainView = &MainView{
 		gui:     ui,
 		session: dgsession,
+		state:   state,
 		channels: &ChannelsView{
+			state:   state,
 			session: dgsession,
 			gui:     ui,
 		},
 		messages: &MessagesView{
+			state:   state,
 			session: dgsession,
 			gui:     ui,
 		},
 		input: &InputView{
+			state:   state,
 			session: dgsession,
 			gui:     ui,
 		},
@@ -64,21 +73,34 @@ func CreateMainView(dgsession *discordgo.Session, ui *gocui.Gui) error {
 
 func (mv *MainView) setHandlers() error {
 	mv.session.AddHandler(mv.readyHandler)
+	mv.session.AddHandler(mv.messageHandler)
 	return nil
 }
 
 // Messy function just for testing, raw index will be replaced with correct implementation
 func (mv *MainView) readyHandler(s *discordgo.Session, event *discordgo.Ready) {
-	mv.channels.showChannelsForGuild(s.State.Guilds[1])
-	messages, err := s.ChannelMessages(s.State.Guilds[1].Channels[28].ID, 50, "", "", "")
+	mv.state.currentChannel = s.State.Guilds[1].Channels[28]
+	mv.state.currentGuild = s.State.Guilds[1]
+	mv.channels.showChannelsForGuild(mv.state.currentGuild)
+	messages, err := s.ChannelMessages(mv.state.currentChannel.ID, 50, "", "", "")
 	if err != nil {
 		panic(err)
 	}
 	mv.messages.showMessages(messages)
 }
 
+func (mv *MainView) messageHandler(s *discordgo.Session, event *discordgo.MessageCreate) {
+	if event.ChannelID == mv.state.currentChannel.ID {
+		mv.messages.showMessages([]*discordgo.Message{event.Message})
+	}
+}
+
 func (mv *MainView) bindKeys() error {
 	if err := mv.gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+		return err
+	}
+
+	if err := mv.gui.SetKeybinding("", gocui.KeyCtrlSpace, gocui.ModNone, changeScreenFocus); err != nil {
 		return err
 	}
 
@@ -98,4 +120,16 @@ func (mv *MainView) bindKeys() error {
 
 func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
+}
+
+func changeScreenFocus(g *gocui.Gui, v *gocui.View) error {
+	switch g.CurrentView().Name() {
+	case messagesView:
+		g.SetCurrentView(inputView)
+	case channelsView:
+		g.SetCurrentView(messagesView)
+	case inputView:
+		g.SetCurrentView(channelsView)
+	}
+	return nil
 }

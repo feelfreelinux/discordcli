@@ -2,10 +2,10 @@
 
 
 [[projects]]
+  branch = "master"
   name = "github.com/bwmarrin/discordgo"
   packages = ["."]
-  revision = "4a33b9bc7c56cfdb9bb244e33e83cb3941fe2bdc"
-  version = "v0.18.0"
+  revision = "73f6772a2b7cc95e29c462e4f15bf07cbe0d3854"
 
 [[projects]]
   branch = "master"
@@ -20,10 +20,10 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/jroimartin/gocui"
   packages = ["."]
-  revision = "4e9ce9a8e26f2ef33dfe297dbdfca148733b6b9b"
-  version = "v0.3.0"
+  revision = "c055c87ae801372cd74a0839b972db4f7697ae5f"
 
 [[projects]]
   name = "github.com/mattn/go-runewidth"
@@ -50,6 +50,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "971e3ad8c58ef97cda557f86bc352cbae4062528601972523e232761b4e95a1b"
+  inputs-digest = "b4448be39e6d1b5dd1e8c84b4503f2f0a0c74459714b21d4f1ff2730389d5249"
   solver-name = "gps-cdcl"
   solver-version = 1

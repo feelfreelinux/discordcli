@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"github.com/bwmarrin/discordgo"
+	"github.com/feelfreelinux/discordcli/discordcli/core"
 	"github.com/jroimartin/gocui"
 )
 
@@ -9,9 +9,8 @@ import (
 InputView shows message input
 */
 type InputView struct {
-	gui     *gocui.Gui
-	session *discordgo.Session
-	state   *State
+	gui   *gocui.Gui
+	State *core.State
 }
 
 func (iv *InputView) render() error {
@@ -38,7 +37,7 @@ func (iv *InputView) sendMessage(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	_, err = iv.session.ChannelMessageSend(iv.state.currentChannel.ID, v.Buffer())
+	_, err = iv.State.Session.ChannelMessageSend(iv.State.CurrentChannel.ID, v.Buffer())
 	v.Clear()
 	v.SetCursor(0, 0)
 	v.SetOrigin(0, 0)

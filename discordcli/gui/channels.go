@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/feelfreelinux/discordcli/discordcli/core"
 	"github.com/jroimartin/gocui"
 )
 
@@ -11,9 +12,8 @@ import (
 ChannelsView shows list of channels in current server
 */
 type ChannelsView struct {
-	gui     *gocui.Gui
-	session *discordgo.Session
-	state   *State
+	gui   *gocui.Gui
+	State *core.State
 }
 
 func (cv *ChannelsView) render() error {

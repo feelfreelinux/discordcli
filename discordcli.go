@@ -15,7 +15,7 @@ func main() {
 	}
 	defer g.Close()
 
-	sess, err := discordgo.New("email", "pass")
+	sess, err := discordgo.New("xD", "xD")
 	if err != nil {
 		panic(err)
 	}

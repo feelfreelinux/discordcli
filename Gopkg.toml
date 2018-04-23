@@ -26,16 +26,16 @@
 
 
 [[constraint]]
+  branch = "master"
   name = "github.com/bwmarrin/discordgo"
-  version = "0.18.0"
 
 [[constraint]]
   branch = "master"
   name = "github.com/feelfreelinux/discordcli"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/jroimartin/gocui"
-  version = "0.3.0"
 
 [prune]
   go-tests = true

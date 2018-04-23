@@ -2,6 +2,7 @@ package gui
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/feelfreelinux/discordcli/discordcli/core"
 	"github.com/jroimartin/gocui"
 )
 
@@ -16,11 +17,10 @@ MainView holds reference for all views and renders them
 */
 type MainView struct {
 	gui      *gocui.Gui
-	session  *discordgo.Session
 	channels *ChannelsView
 	messages *MessagesView
 	input    *InputView
-	state    *State
+	State    *core.State
 }
 
 func (mv *MainView) layout(g *gocui.Gui) error {
@@ -43,25 +43,23 @@ CreateMainView creates MainView and all of its child views
 */
 func CreateMainView(dgsession *discordgo.Session, ui *gocui.Gui) error {
 	ui.Cursor = true
-	var state = &State{}
+	var state = &core.State{
+		Session: dgsession,
+	}
 	var mainView = &MainView{
-		gui:     ui,
-		session: dgsession,
-		state:   state,
+		gui:   ui,
+		State: state,
 		channels: &ChannelsView{
-			state:   state,
-			session: dgsession,
-			gui:     ui,
+			State: state,
+			gui:   ui,
 		},
 		messages: &MessagesView{
-			state:   state,
-			session: dgsession,
-			gui:     ui,
+			State: state,
+			gui:   ui,
 		},
 		input: &InputView{
-			state:   state,
-			session: dgsession,
-			gui:     ui,
+			State: state,
+			gui:   ui,
 		},
 	}
 	ui.SetManagerFunc(mainView.layout)
@@ -72,17 +70,17 @@ func CreateMainView(dgsession *discordgo.Session, ui *gocui.Gui) error {
 }
 
 func (mv *MainView) setHandlers() error {
-	mv.session.AddHandler(mv.readyHandler)
-	mv.session.AddHandler(mv.messageHandler)
+	mv.State.Session.AddHandler(mv.readyHandler)
+	mv.State.Session.AddHandler(mv.messageHandler)
 	return nil
 }
 
 // Messy function just for testing, raw index will be replaced with correct implementation
 func (mv *MainView) readyHandler(s *discordgo.Session, event *discordgo.Ready) {
-	mv.state.currentChannel = s.State.Guilds[1].Channels[28]
-	mv.state.currentGuild = s.State.Guilds[1]
-	mv.channels.showChannelsForGuild(mv.state.currentGuild)
-	messages, err := s.ChannelMessages(mv.state.currentChannel.ID, 50, "", "", "")
+	mv.State.CurrentChannel = s.State.Guilds[1].Channels[28]
+	mv.State.CurrentGuild = s.State.Guilds[1]
+	mv.channels.showChannelsForGuild(mv.State.CurrentGuild)
+	messages, err := s.ChannelMessages(mv.State.CurrentChannel.ID, 50, "", "", "")
 	if err != nil {
 		panic(err)
 	}
@@ -90,7 +88,7 @@ func (mv *MainView) readyHandler(s *discordgo.Session, event *discordgo.Ready) {
 }
 
 func (mv *MainView) messageHandler(s *discordgo.Session, event *discordgo.MessageCreate) {
-	if event.ChannelID == mv.state.currentChannel.ID {
+	if event.ChannelID == mv.State.CurrentChannel.ID {
 		mv.messages.showMessages([]*discordgo.Message{event.Message})
 	}
 }

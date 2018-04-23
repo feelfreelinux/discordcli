@@ -18,6 +18,8 @@ type ChannelsView struct {
 }
 
 const (
+	categoryMark     = "-"
+	hashtagMark      = "#"
 	treeSignUpMiddle = "├"
 	treeSignUpEnding = "└"
 )
@@ -60,15 +62,26 @@ func drawGuild(w io.Writer, guild *discordgo.Guild) error {
 
 func drawChannels(w io.Writer, channels []*discordgo.Channel) error {
 	for _, category := range core.SortChannels(channels) {
-		fmt.Fprintln(w, treeSignUpMiddle+" "+category.Channel.Name)
+		fmt.Fprintln(w, formatChannel(category.Channel))
 		for _, channel := range category.Channels {
-			fmt.Fprintln(w, " "+treeSignUpMiddle+" "+channel.Name)
-
+			fmt.Fprintln(w, " "+formatChannel(channel))
 		}
 
 	}
 
 	return nil
+}
+
+func formatChannel(channel *discordgo.Channel) string {
+	switch channel.Type {
+	case discordgo.ChannelTypeGuildVoice:
+		return "v " + channel.Name
+	case discordgo.ChannelTypeGuildCategory:
+		return "- " + channel.Name
+	case discordgo.ChannelTypeGuildText:
+		return "# " + channel.Name
+	}
+	return channel.Name
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {

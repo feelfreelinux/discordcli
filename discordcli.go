@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/feelfreelinux/discordcli/discordcli/gui"
@@ -16,11 +17,9 @@ type config struct {
 	Password string `json:"password"`
 }
 
-func loadConfig() config {
+func loadConfig() (cfg config, err error) {
 	dir := configdir.New("feelfreelinux", "discordcli")
 	cfgFile := dir.QueryFolderContainsFile("config.json")
-
-	cfg := config{}
 
 	if cfgFile == nil { // file not found, ask user for data
 		// TODO: add nice gui
@@ -28,32 +27,36 @@ func loadConfig() config {
 		fmt.Scanln(&cfg.Email)
 		fmt.Print("Password: ")
 		fmt.Scanln(&cfg.Password)
-		writer, err := dir.QueryFolders(configdir.Global)[0].Create("config.json")
+		var jsonFile *os.File
+		jsonFile, err = dir.QueryFolders(configdir.Global)[0].Create("config.json")
 		if err != nil {
-			panic(err)
+			return
 		}
-		encoder := json.NewEncoder(writer)
+		encoder := json.NewEncoder(jsonFile)
 		encoder.SetIndent("", "    ")
 		err = encoder.Encode(&cfg)
 		if err != nil {
-			panic(err)
+			return
 		}
 	} else {
-		jsonData, err := cfgFile.ReadFile("config.json")
+		var jsonData []byte
+		jsonData, err = cfgFile.ReadFile("config.json")
 		if err != nil {
 			panic(err)
 		}
 		err = json.Unmarshal(jsonData, &cfg)
 		if err != nil {
-			panic(err)
+			return
 		}
 	}
-
-	return cfg
+	return
 }
 
 func main() {
-	cfg := loadConfig()
+	cfg, cfgErr := loadConfig()
+	if cfgErr != nil {
+		log.Panicf("Failed to load config %v", cfgErr)
+	}
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Panicln(err)

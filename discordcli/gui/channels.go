@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/feelfreelinux/discordcli/discordcli/core"
@@ -15,6 +16,11 @@ type ChannelsView struct {
 	gui   *gocui.Gui
 	State *core.State
 }
+
+const (
+	treeSignUpMiddle = "├"
+	treeSignUpEnding = "└"
+)
 
 func (cv *ChannelsView) render() error {
 	_, maxY := cv.gui.Size()
@@ -32,17 +38,31 @@ func (cv *ChannelsView) render() error {
 	return nil
 }
 
-func (cv *ChannelsView) showChannelsForGuild(guild *discordgo.Guild) error {
+func (cv *ChannelsView) drawGuilds(guilds []*discordgo.Guild) error {
 	cv.gui.Update(func(g *gocui.Gui) error {
 		v, err := g.View(channelsView)
 		if err != nil {
 			return err
 		}
-		for _, channel := range guild.Channels {
-			fmt.Fprintln(v, channel.Name)
+		for _, guild := range guilds {
+			drawGuild(v, guild)
 		}
 		return nil
 	})
+	return nil
+}
+
+func drawGuild(w io.Writer, guild *discordgo.Guild) error {
+	fmt.Fprintln(w, guild.Name)
+	drawChannels(w, guild.Channels)
+	return nil
+}
+
+func drawChannels(w io.Writer, channels []*discordgo.Channel) error {
+	for _, channel := range core.SortChannels(channels) {
+		fmt.Fprintln(w, treeSignUpMiddle+" "+channel.Channel().Name)
+	}
+
 	return nil
 }
 

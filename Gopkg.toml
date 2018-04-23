@@ -40,3 +40,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/shibukawa/configdir"
+
+[[constraint]]
+  version = "v1.5"
+  name = "gopkg.in/kyokomi/emoji.v1"

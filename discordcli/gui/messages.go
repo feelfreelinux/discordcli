@@ -2,7 +2,7 @@ package gui
 
 import (
 	"fmt"
-
+	"gopkg.in/kyokomi/emoji.v1"
 	"github.com/bwmarrin/discordgo"
 	"github.com/feelfreelinux/discordcli/discordcli/core"
 	"github.com/jroimartin/gocui"
@@ -43,7 +43,7 @@ func (mv *MessagesView) showMessages(messages []*discordgo.Message) error {
 }
 
 func formatMessage(message *discordgo.Message) string {
-	return message.Author.Username + ": " + message.ContentWithMentionsReplaced()
+	return message.Author.Username + ": " + emoji.Sprintf(message.ContentWithMentionsReplaced())
 }
 
 func (mv *MessagesView) bindKeys() error {

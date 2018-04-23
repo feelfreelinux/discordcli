@@ -31,10 +31,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/feelfreelinux/discordcli"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/jroimartin/gocui"
 
 [prune]

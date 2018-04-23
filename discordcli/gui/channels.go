@@ -59,8 +59,13 @@ func drawGuild(w io.Writer, guild *discordgo.Guild) error {
 }
 
 func drawChannels(w io.Writer, channels []*discordgo.Channel) error {
-	for _, channel := range core.SortChannels(channels) {
-		fmt.Fprintln(w, treeSignUpMiddle+" "+channel.Channel().Name)
+	for _, category := range core.SortChannels(channels) {
+		fmt.Fprintln(w, treeSignUpMiddle+" "+category.Channel.Name)
+		for _, channel := range category.Channels {
+			fmt.Fprintln(w, " "+treeSignUpMiddle+" "+channel.Name)
+
+		}
+
 	}
 
 	return nil

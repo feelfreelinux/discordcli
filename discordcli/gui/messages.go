@@ -2,10 +2,11 @@ package gui
 
 import (
 	"fmt"
-	"gopkg.in/kyokomi/emoji.v1"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/feelfreelinux/discordcli/discordcli/core"
 	"github.com/jroimartin/gocui"
+	"gopkg.in/kyokomi/emoji.v1"
 )
 
 /*

@@ -47,15 +47,9 @@
   ]
   revision = "2b6c08872f4b66da917bb4ce98df4f0307330f78"
 
-[[projects]]
-  name = "gopkg.in/kyokomi/emoji.v1"
-  packages = ["."]
-  revision = "7e06b236c489543f53868841f188a294e3383eab"
-  version = "v1.5"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2b4a4f121bf66ae9b6a5eeea9dccf1fefb9c7151c8b6c570a2f3c2e61543b58e"
+  inputs-digest = "92f5a945268f152ca5ce96a8d0888de54d86f1a5c675ff3b543e9f31cab8e066"
   solver-name = "gps-cdcl"
   solver-version = 1

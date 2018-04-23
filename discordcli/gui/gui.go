@@ -79,7 +79,7 @@ func (mv *MainView) setHandlers() error {
 func (mv *MainView) readyHandler(s *discordgo.Session, event *discordgo.Ready) {
 	mv.State.CurrentChannel = s.State.Guilds[1].Channels[28]
 	mv.State.CurrentGuild = s.State.Guilds[1]
-	mv.channels.showChannelsForGuild(mv.State.CurrentGuild)
+	mv.channels.drawGuilds(s.State.Guilds)
 	messages, err := s.ChannelMessages(mv.State.CurrentChannel.ID, 50, "", "", "")
 	if err != nil {
 		panic(err)

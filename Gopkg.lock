@@ -10,8 +10,11 @@
 [[projects]]
   branch = "master"
   name = "github.com/feelfreelinux/discordcli"
-  packages = ["discordcli/gui"]
-  revision = "e5b92ba6135d05d958c5fffbf55ddcb6c8403f24"
+  packages = [
+    "discordcli/core",
+    "discordcli/gui"
+  ]
+  revision = "c46531da41408faa5d1d8b6efc47649a10204572"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -50,6 +53,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b4448be39e6d1b5dd1e8c84b4503f2f0a0c74459714b21d4f1ff2730389d5249"
+  inputs-digest = "8f8da29f99b883c4e090ba9811bc54b4329ba9db82b28f0f9b7daee7dc9bf2c7"
   solver-name = "gps-cdcl"
   solver-version = 1

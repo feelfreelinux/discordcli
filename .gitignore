@@ -1,0 +1,4 @@
+vendor/
+debug.test
+.vscode/
+/cmd/debug

@@ -36,15 +36,19 @@ func (mv *MessagesView) showMessages(messages []*discordgo.Message) error {
 			return err
 		}
 		for i := len(messages) - 1; i >= 0; i-- {
-			fmt.Fprintln(v, formatMessage(messages[i]))
+			fmt.Fprintln(v, formatMessage(mv.State.Session, messages[i]))
 		}
 		return nil
 	})
 	return nil
 }
 
-func formatMessage(message *discordgo.Message) string {
-	return message.Author.Username + ": " + emoji.Sprintf(message.ContentWithMentionsReplaced())
+func formatMessage(session *discordgo.Session, message *discordgo.Message) string {
+	return formatAuthorNickname(session, message) + ": " + emoji.Sprintf(message.ContentWithMentionsReplaced())
+}
+
+func formatAuthorNickname(session *discordgo.Session, message *discordgo.Message) string {
+	return core.GetColoredNick(message.Author.Username, session.State.UserColor(message.Author.ID, message.ChannelID))
 }
 
 func (mv *MessagesView) bindKeys() error {

@@ -40,7 +40,14 @@
 [[constraint]]
   branch = "master"
   name = "github.com/shibukawa/configdir"
+[[constraint]]
+  version = "v1.6.0"
+  name = "github.com/fatih/color"
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/aybabtme/rgbterm"
+  
 [[constraint]]
   version = "v1.5"
   name = "gopkg.in/kyokomi/emoji.v1"

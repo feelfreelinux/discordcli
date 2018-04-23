@@ -24,6 +24,7 @@ func (iv *InputView) render() error {
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
 		v.Title = " message "
+		v.Wrap = true
 		if _, err := iv.gui.SetCurrentView(inputView); err != nil {
 			return err
 		}

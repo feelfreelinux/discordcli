@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/fatih/color"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/feelfreelinux/discordcli/discordcli/core"
 	"github.com/jroimartin/gocui"
@@ -57,14 +59,15 @@ func (cv *ChannelsView) drawGuilds(guilds []*discordgo.Guild) error {
 func drawGuild(w io.Writer, guild *discordgo.Guild) error {
 	fmt.Fprintln(w, guild.Name)
 	drawChannels(w, guild.Channels)
+	fmt.Fprintln(w)
 	return nil
 }
 
 func drawChannels(w io.Writer, channels []*discordgo.Channel) error {
 	for _, category := range core.SortChannels(channels) {
-		fmt.Fprintln(w, formatChannel(category.Channel))
+		fmt.Fprintln(w, formatChannel(category.Channel), color.BlueString(category.Channel.Name))
 		for _, channel := range category.Channels {
-			fmt.Fprintln(w, " "+formatChannel(channel))
+			fmt.Fprintln(w, " ", formatChannel(channel), color.BlueString(channel.Name))
 		}
 
 	}
@@ -75,13 +78,13 @@ func drawChannels(w io.Writer, channels []*discordgo.Channel) error {
 func formatChannel(channel *discordgo.Channel) string {
 	switch channel.Type {
 	case discordgo.ChannelTypeGuildVoice:
-		return "v " + channel.Name
+		return color.RedString("v")
 	case discordgo.ChannelTypeGuildCategory:
-		return "- " + channel.Name
+		return color.YellowString("-")
 	case discordgo.ChannelTypeGuildText:
-		return "# " + channel.Name
+		return color.GreenString("#")
 	}
-	return channel.Name
+	return ""
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {

@@ -9,4 +9,5 @@ type State struct {
 	CurrentGuild   *discordgo.Guild
 	CurrentChannel *discordgo.Channel
 	Session        *discordgo.Session
+	GuildMap       []*GuildMapItem
 }

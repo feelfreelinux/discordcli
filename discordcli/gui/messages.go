@@ -43,6 +43,18 @@ func (mv *MessagesView) showMessages(messages []*discordgo.Message) error {
 	return nil
 }
 
+func (mv *MessagesView) clearBuffer() error {
+	mv.gui.Update(func(g *gocui.Gui) error {
+		v, err := g.View(messagesView)
+		if err != nil {
+			return err
+		}
+		v.Clear()
+		return nil
+	})
+	return nil
+}
+
 func formatMessage(session *discordgo.Session, message *discordgo.Message) string {
 	return formatAuthorNickname(session, message) + ": " + emoji.Sprintf(message.ContentWithMentionsReplaced())
 }

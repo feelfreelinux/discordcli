@@ -75,21 +75,24 @@ func (mv *MainView) setHandlers() error {
 	return nil
 }
 
-// Messy function just for testing, raw index will be replaced with correct implementation
-func (mv *MainView) readyHandler(s *discordgo.Session, event *discordgo.Ready) {
-	mv.State.CurrentChannel = s.State.Guilds[1].Channels[28]
-	mv.State.CurrentGuild = s.State.Guilds[1]
-	mv.channels.drawGuilds(s.State.Guilds)
-	messages, err := s.ChannelMessages(mv.State.CurrentChannel.ID, 50, "", "", "")
-	if err != nil {
-		panic(err)
-	}
+func (mv *MainView) changeChannel(channel *discordgo.Channel) {
+	mv.State.CurrentChannel = channel
+	messages, _ := mv.State.Session.ChannelMessages(channel.ID, 50, "", "", "")
+	mv.messages.clearBuffer()
 	mv.messages.showMessages(messages)
 }
 
+// Messy function just for testing, raw index will be replaced with correct implementation
+func (mv *MainView) readyHandler(s *discordgo.Session, event *discordgo.Ready) {
+	mv.channels.channelChangedCallback = mv.changeChannel
+	mv.channels.drawGuilds(s.State.Guilds)
+}
+
 func (mv *MainView) messageHandler(s *discordgo.Session, event *discordgo.MessageCreate) {
-	if event.ChannelID == mv.State.CurrentChannel.ID {
-		mv.messages.showMessages([]*discordgo.Message{event.Message})
+	if mv.State.CurrentChannel != nil {
+		if event.ChannelID == mv.State.CurrentChannel.ID {
+			mv.messages.showMessages([]*discordgo.Message{event.Message})
+		}
 	}
 }
 

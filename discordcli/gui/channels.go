@@ -15,8 +15,9 @@ import (
 ChannelsView shows list of channels in current server
 */
 type ChannelsView struct {
-	gui   *gocui.Gui
-	State *core.State
+	gui                    *gocui.Gui
+	State                  *core.State
+	channelChangedCallback func(channel *discordgo.Channel)
 }
 
 const (
@@ -48,31 +49,59 @@ func (cv *ChannelsView) drawGuilds(guilds []*discordgo.Guild) error {
 		if err != nil {
 			return err
 		}
+		guildMap := []*core.GuildMapItem{}
 		for _, guild := range guilds {
-			drawGuild(v, guild)
+			guildMap = append(guildMap, &core.GuildMapItem{
+				Type:  core.GuildMapTypeGuild,
+				Guild: guild,
+			})
+			channels := drawGuild(v, guild)
+			for _, channel := range channels {
+				guildMap = append(guildMap, &core.GuildMapItem{
+					Type:    core.GuildMapTypeChannel,
+					Channel: channel,
+				})
+			}
 		}
+		cv.State.GuildMap = guildMap
 		return nil
 	})
 	return nil
 }
 
-func drawGuild(w io.Writer, guild *discordgo.Guild) error {
-	fmt.Fprintln(w, guild.Name)
-	drawChannels(w, guild.Channels)
-	fmt.Fprintln(w)
+func (cv *ChannelsView) joinChannel(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	_, xy := v.Origin()
+	pos := cy + xy
+	if pos < len(cv.State.GuildMap) {
+		if cv.State.GuildMap[pos].Type == core.GuildMapTypeChannel {
+			switch cv.State.GuildMap[pos].Channel.Type {
+			case discordgo.ChannelTypeGuildText:
+				cv.channelChangedCallback(cv.State.GuildMap[pos].Channel)
+			}
+		}
+	}
 	return nil
 }
 
-func drawChannels(w io.Writer, channels []*discordgo.Channel) error {
+func drawGuild(w io.Writer, guild *discordgo.Guild) []*discordgo.Channel {
+	fmt.Fprintln(w, guild.Name)
+
+	return drawChannels(w, guild.Channels)
+}
+
+func drawChannels(w io.Writer, channels []*discordgo.Channel) []*discordgo.Channel {
+	guildMapChannels := []*discordgo.Channel{}
 	for _, category := range core.SortChannels(channels) {
+		guildMapChannels = append(guildMapChannels, category.Channel)
 		fmt.Fprintln(w, formatChannel(category.Channel), color.BlueString(category.Channel.Name))
 		for _, channel := range category.Channels {
+			guildMapChannels = append(guildMapChannels, channel)
 			fmt.Fprintln(w, " ", formatChannel(channel), color.BlueString(channel.Name))
 		}
 
 	}
-
-	return nil
+	return guildMapChannels
 }
 
 func formatChannel(channel *discordgo.Channel) string {
@@ -118,6 +147,10 @@ func (cv *ChannelsView) bindKeys() error {
 		return err
 	}
 	if err := cv.gui.SetKeybinding(channelsView, gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+
+	if err := cv.gui.SetKeybinding(channelsView, gocui.KeyEnter, gocui.ModNone, cv.joinChannel); err != nil {
 		return err
 	}
 	return nil

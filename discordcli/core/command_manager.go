@@ -25,15 +25,15 @@ ExecuteCommand finds a command to run and runs
 func (CommandManager) ExecuteCommand(msg string) error {
 	cmd := strings.TrimLeft(msg, "/")
 	args := strings.Split(cmd, " ")
-
+	commandName := strings.TrimSpace(args[0])
 	for i := range args {
-		if RegisteredCommands[i].Name() == strings.TrimSpace(args[0]) {
+		if RegisteredCommands[i].Name() == commandName {
 
 			return RegisteredCommands[i].Execute(args[1:])
 
 		}
 	}
 
-	return errors.New("Command " + args[0] + "not found")
+	return errors.New("Command " + commandName + "not found")
 
 }

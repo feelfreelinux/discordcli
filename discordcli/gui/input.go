@@ -16,13 +16,12 @@ const (
 InputView shows message input
 */
 type InputView struct {
-	gui   *gocui.Gui
 	State *core.State
 }
 
 func (iv *InputView) render() error {
-	maxX, maxY := iv.gui.Size()
-	if v, err := iv.gui.SetView(inputView, 21, maxY-3, maxX-1, maxY-1); err != nil {
+	maxX, maxY := iv.State.Gui.Size()
+	if v, err := iv.State.Gui.SetView(inputView, 21, maxY-3, maxX-1, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -32,7 +31,7 @@ func (iv *InputView) render() error {
 		v.SelFgColor = gocui.ColorBlack
 		v.Title = " message "
 		v.Wrap = true
-		if _, err := iv.gui.SetCurrentView(inputView); err != nil {
+		if _, err := iv.State.Gui.SetCurrentView(inputView); err != nil {
 			return err
 		}
 	}
@@ -80,7 +79,7 @@ func (iv *InputView) formatNewMessage(message string) string {
 }
 
 func (iv *InputView) bindKeys() error {
-	if err := iv.gui.SetKeybinding(inputView, gocui.KeyEnter, gocui.ModNone, iv.sendMessage); err != nil {
+	if err := iv.State.Gui.SetKeybinding(inputView, gocui.KeyEnter, gocui.ModNone, iv.sendMessage); err != nil {
 		return err
 	}
 	return nil

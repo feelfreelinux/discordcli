@@ -13,13 +13,12 @@ import (
 MessagesView shows messages in current selected channel
 */
 type MessagesView struct {
-	gui   *gocui.Gui
 	State *core.State
 }
 
 func (mv *MessagesView) render() error {
-	maxX, maxY := mv.gui.Size()
-	if v, err := mv.gui.SetView(messagesView, 21, 0, maxX-1, maxY-4); err != nil {
+	maxX, maxY := mv.State.Gui.Size()
+	if v, err := mv.State.Gui.SetView(messagesView, 21, 0, maxX-1, maxY-4); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -30,7 +29,7 @@ func (mv *MessagesView) render() error {
 }
 
 func (mv *MessagesView) showMessages(messages []*discordgo.Message) error {
-	mv.gui.Update(func(g *gocui.Gui) error {
+	mv.State.Gui.Update(func(g *gocui.Gui) error {
 		v, err := g.View(messagesView)
 		if err != nil {
 			return err
@@ -44,7 +43,7 @@ func (mv *MessagesView) showMessages(messages []*discordgo.Message) error {
 }
 
 func (mv *MessagesView) clearBuffer() error {
-	mv.gui.Update(func(g *gocui.Gui) error {
+	mv.State.Gui.Update(func(g *gocui.Gui) error {
 		v, err := g.View(messagesView)
 		if err != nil {
 			return err

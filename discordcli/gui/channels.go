@@ -15,9 +15,9 @@ import (
 ChannelsView shows list of channels in current server
 */
 type ChannelsView struct {
-	gui                    *gocui.Gui
 	State                  *core.State
 	channelChangedCallback func(channel *discordgo.Channel)
+	GuildMapPositionIDS    []string
 }
 
 const (
@@ -28,15 +28,15 @@ const (
 )
 
 func (cv *ChannelsView) render() error {
-	_, maxY := cv.gui.Size()
-	if v, err := cv.gui.SetView(channelsView, 0, 0, 20, maxY-1); err != nil {
+	_, maxY := cv.State.Gui.Size()
+	if v, err := cv.State.Gui.SetView(channelsView, 0, 0, 20, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Highlight = true
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
-		if _, err := cv.gui.SetCurrentView(channelsView); err != nil {
+		if _, err := cv.State.Gui.SetCurrentView(channelsView); err != nil {
 			return err
 		}
 	}
@@ -44,26 +44,29 @@ func (cv *ChannelsView) render() error {
 }
 
 func (cv *ChannelsView) drawGuilds(guilds []*discordgo.Guild) error {
-	cv.gui.Update(func(g *gocui.Gui) error {
+	cv.State.Gui.Update(func(g *gocui.Gui) error {
 		v, err := g.View(channelsView)
 		if err != nil {
 			return err
 		}
-		guildMap := []*core.GuildMapItem{}
+		cv.GuildMapPositionIDS = []string{}
 		for _, guild := range guilds {
-			guildMap = append(guildMap, &core.GuildMapItem{
-				Type:  core.GuildMapTypeGuild,
-				Guild: guild,
-			})
+			cv.State.GuildMap[guild.ID] =
+				&core.GuildMapItem{
+					Type:    core.GuildMapTypeGuild,
+					Guild:   guild,
+					Members: make(map[string]*discordgo.Member),
+				}
+			cv.GuildMapPositionIDS = append(cv.GuildMapPositionIDS, guild.ID)
 			channels := drawGuild(v, guild)
 			for _, channel := range channels {
-				guildMap = append(guildMap, &core.GuildMapItem{
+				cv.State.GuildMap[channel.ID] = &core.GuildMapItem{
 					Type:    core.GuildMapTypeChannel,
 					Channel: channel,
-				})
+				}
+				cv.GuildMapPositionIDS = append(cv.GuildMapPositionIDS, channel.ID)
 			}
 		}
-		cv.State.GuildMap = guildMap
 		return nil
 	})
 	return nil
@@ -73,11 +76,11 @@ func (cv *ChannelsView) joinChannel(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
 	_, xy := v.Origin()
 	pos := cy + xy
-	if pos < len(cv.State.GuildMap) {
-		if cv.State.GuildMap[pos].Type == core.GuildMapTypeChannel {
-			switch cv.State.GuildMap[pos].Channel.Type {
+	if pos < len(cv.GuildMapPositionIDS) {
+		if cv.State.GuildMap[cv.GuildMapPositionIDS[pos]].Type == core.GuildMapTypeChannel {
+			switch cv.State.GuildMap[cv.GuildMapPositionIDS[pos]].Channel.Type {
 			case discordgo.ChannelTypeGuildText:
-				cv.channelChangedCallback(cv.State.GuildMap[pos].Channel)
+				cv.channelChangedCallback(cv.State.GuildMap[cv.GuildMapPositionIDS[pos]].Channel)
 			}
 		}
 	}
@@ -143,14 +146,14 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (cv *ChannelsView) bindKeys() error {
-	if err := cv.gui.SetKeybinding(channelsView, gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+	if err := cv.State.Gui.SetKeybinding(channelsView, gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
-	if err := cv.gui.SetKeybinding(channelsView, gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+	if err := cv.State.Gui.SetKeybinding(channelsView, gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
 		return err
 	}
 
-	if err := cv.gui.SetKeybinding(channelsView, gocui.KeyEnter, gocui.ModNone, cv.joinChannel); err != nil {
+	if err := cv.State.Gui.SetKeybinding(channelsView, gocui.KeyEnter, gocui.ModNone, cv.joinChannel); err != nil {
 		return err
 	}
 	return nil

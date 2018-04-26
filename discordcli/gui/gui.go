@@ -16,7 +16,6 @@ const (
 MainView holds reference for all views and renders them
 */
 type MainView struct {
-	gui      *gocui.Gui
 	channels *ChannelsView
 	messages *MessagesView
 	input    *InputView
@@ -44,23 +43,21 @@ CreateMainView creates MainView and all of its child views
 func CreateMainView(dgsession *discordgo.Session, ui *gocui.Gui) error {
 	ui.Cursor = true
 	var state = &core.State{
+		Gui:            ui,
 		Session:        dgsession,
 		CommandManager: &core.CommandManager{},
+		GuildMap:       make(map[string]*core.GuildMapItem),
 	}
 	var mainView = &MainView{
-		gui:   ui,
 		State: state,
 		channels: &ChannelsView{
 			State: state,
-			gui:   ui,
 		},
 		messages: &MessagesView{
 			State: state,
-			gui:   ui,
 		},
 		input: &InputView{
 			State: state,
-			gui:   ui,
 		},
 	}
 	ui.SetManagerFunc(mainView.layout)
@@ -100,11 +97,11 @@ func (mv *MainView) messageHandler(s *discordgo.Session, event *discordgo.Messag
 }
 
 func (mv *MainView) bindKeys() error {
-	if err := mv.gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+	if err := mv.State.Gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
 
-	if err := mv.gui.SetKeybinding("", gocui.KeyCtrlSpace, gocui.ModNone, changeScreenFocus); err != nil {
+	if err := mv.State.Gui.SetKeybinding("", gocui.KeyCtrlSpace, gocui.ModNone, changeScreenFocus); err != nil {
 		return err
 	}
 

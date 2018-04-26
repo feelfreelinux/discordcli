@@ -20,7 +20,7 @@ func (CommandManager) IsCommand(msg string) bool {
 }
 
 /*
-ExecuteCommand finds a command to run and runs
+ExecuteCommand finds a command to run and runs it
 */
 func (CommandManager) ExecuteCommand(msg string) error {
 	cmd := strings.TrimLeft(msg, "/")

@@ -1,8 +1,15 @@
 package gui
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/feelfreelinux/discordcli/discordcli/core"
 	"github.com/jroimartin/gocui"
+)
+
+const (
+	usernameRegex = "@([^\\s]+)"
 )
 
 /*
@@ -38,11 +45,32 @@ func (iv *InputView) sendMessage(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	_, err = iv.State.Session.ChannelMessageSend(iv.State.CurrentChannel.ID, v.Buffer())
+	_, err = iv.State.Session.ChannelMessageSend(iv.State.CurrentChannel.ID, iv.formatNewMessage(v.Buffer()))
 	v.Clear()
 	v.SetCursor(0, 0)
 	v.SetOrigin(0, 0)
 	return err
+}
+
+func (iv *InputView) formatNewMessage(message string) string {
+	members := iv.State.CurrentGuild.Members
+	mentions := regexp.MustCompile(usernameRegex).FindAllString(message, -1)
+
+	replaceMessage := message
+	for _, mention := range mentions {
+		for _, member := range members {
+			memberNick := member.Nick
+			if memberNick == "" {
+				memberNick = member.User.Username
+			}
+
+			if strings.TrimPrefix(mention, "@") == memberNick {
+				replaceMessage = strings.Replace(replaceMessage, mention, member.User.Mention(), -1)
+				break
+			}
+		}
+	}
+	return replaceMessage
 }
 
 func (iv *InputView) bindKeys() error {

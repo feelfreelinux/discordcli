@@ -77,6 +77,8 @@ func (mv *MainView) setHandlers() error {
 
 func (mv *MainView) changeChannel(channel *discordgo.Channel) {
 	mv.State.CurrentChannel = channel
+	guild, _ := mv.State.Session.State.Guild(channel.GuildID)
+	mv.State.CurrentGuild = guild
 	messages, _ := mv.State.Session.ChannelMessages(channel.ID, 50, "", "", "")
 	mv.messages.clearBuffer()
 	mv.messages.showMessages(messages)

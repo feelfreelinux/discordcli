@@ -36,7 +36,7 @@ func (mv *MessagesView) showMessages(messages []*discordgo.Message) error {
 			return err
 		}
 		for i := len(messages) - 1; i >= 0; i-- {
-			fmt.Fprintln(v, formatMessage(mv.State.Session, messages[i]))
+			fmt.Fprintln(v, mv.formatMessage(messages[i]))
 		}
 		return nil
 	})
@@ -55,12 +55,17 @@ func (mv *MessagesView) clearBuffer() error {
 	return nil
 }
 
-func formatMessage(session *discordgo.Session, message *discordgo.Message) string {
-	return formatAuthorNickname(session, message) + ": " + emoji.Sprintf(message.ContentWithMentionsReplaced())
+func (mv *MessagesView) formatMessage(message *discordgo.Message) string {
+	return message.Author.Mention() + " " + mv.formatAuthorNickname(message) + ": " + emoji.Sprintf(message.ContentWithMentionsReplaced())
 }
 
-func formatAuthorNickname(session *discordgo.Session, message *discordgo.Message) string {
-	return core.GetColoredNick(message.Author.Username, session.State.UserColor(message.Author.ID, message.ChannelID))
+func (mv *MessagesView) formatAuthorNickname(message *discordgo.Message) string {
+	author, err := mv.State.Session.State.Member(mv.State.CurrentGuild.ID, message.Author.ID)
+	if err == nil && len(author.Nick) > 0 {
+		return core.GetColoredNick(author.Nick, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
+	} else {
+		return core.GetColoredNick(message.Author.Username, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
+	}
 }
 
 func (mv *MessagesView) bindKeys() error {

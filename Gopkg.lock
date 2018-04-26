@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/aybabtme/rgbterm"
+  packages = ["."]
+  revision = "cc83f3b3ce5911279513a46d6d3316d67bedaa54"
+
+[[projects]]
+  branch = "master"
   name = "github.com/bwmarrin/discordgo"
   packages = ["."]
   revision = "73f6772a2b7cc95e29c462e4f15bf07cbe0d3854"
@@ -80,6 +86,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bc847b468219715de19b10fe4985db52ed1ba1a3cbe3bdbc80506b5ba63621cf"
+  inputs-digest = "3b0b7c5650f186474c80ec31ecc2533d6fbd0d836d82f5ba06fb892ce35a6b97"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -44,7 +44,8 @@ CreateMainView creates MainView and all of its child views
 func CreateMainView(dgsession *discordgo.Session, ui *gocui.Gui) error {
 	ui.Cursor = true
 	var state = &core.State{
-		Session: dgsession,
+		Session:        dgsession,
+		CommandManager: &core.CommandManager{},
 	}
 	var mainView = &MainView{
 		gui:   ui,

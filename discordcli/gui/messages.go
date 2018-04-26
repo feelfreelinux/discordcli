@@ -63,9 +63,9 @@ func (mv *MessagesView) formatAuthorNickname(message *discordgo.Message) string 
 	author, err := mv.State.Session.State.Member(mv.State.CurrentGuild.ID, message.Author.ID)
 	if err == nil && len(author.Nick) > 0 {
 		return core.GetColoredNick(author.Nick, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
-	} else {
-		return core.GetColoredNick(message.Author.Username, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
 	}
+	return core.GetColoredNick(message.Author.Username, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
+
 }
 
 func (mv *MessagesView) bindKeys() error {

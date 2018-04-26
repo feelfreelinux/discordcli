@@ -1,8 +1,14 @@
 package core
 
+import (
+	"os"
+)
+
 type exitCommand struct{}
 
 func (exitCommand) Execute(args []string) error {
+	os.Exit(0)
+
 	return nil
 }
 

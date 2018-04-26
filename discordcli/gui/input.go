@@ -44,11 +44,17 @@ func (iv *InputView) sendMessage(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
-
-	_, err = iv.State.Session.ChannelMessageSend(iv.State.CurrentChannel.ID, iv.formatNewMessage(v.Buffer()))
+	msg := v.Buffer()
 	v.Clear()
 	v.SetCursor(0, 0)
 	v.SetOrigin(0, 0)
+	if iv.State.CommandManager.IsCommand(msg) {
+		err := iv.State.CommandManager.ExecuteCommand(msg)
+		//iv.gui.
+		return err
+	}
+	_, err = iv.State.Session.ChannelMessageSend(iv.State.CurrentChannel.ID, iv.formatNewMessage(msg))
+
 	return err
 }
 

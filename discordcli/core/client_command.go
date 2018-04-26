@@ -1,5 +1,8 @@
 package core
 
+/*
+RegisteredCommands holds all commands registred by init() in command files
+*/
 var RegisteredCommands []ClientCommand
 
 /*

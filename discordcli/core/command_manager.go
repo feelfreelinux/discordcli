@@ -2,6 +2,8 @@ package core
 
 import (
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 /*
@@ -20,13 +22,18 @@ func (CommandManager) IsCommand(msg string) bool {
 /*
 ExecuteCommand finds a command to run and runs
 */
-func (CommandManager) ExecuteCommand(msg string) {
+func (CommandManager) ExecuteCommand(msg string) error {
 	cmd := strings.TrimLeft(msg, "/")
 	args := strings.Split(cmd, " ")
+
 	for i := range args {
-		if RegisteredCommands[i].Name() == args[0] {
-			RegisteredCommands[i].Execute(args[1:])
+		if RegisteredCommands[i].Name() == strings.TrimSpace(args[0]) {
+
+			return RegisteredCommands[i].Execute(args[1:])
+
 		}
 	}
-	panic("COMMAND NOT FOUND")
+
+	return errors.New("Command " + args[0] + "not found")
+
 }

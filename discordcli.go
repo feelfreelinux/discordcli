@@ -13,8 +13,7 @@ import (
 )
 
 type config struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Token string `json:"token"`
 }
 
 func loadConfig() (cfg config, err error) {
@@ -23,10 +22,9 @@ func loadConfig() (cfg config, err error) {
 
 	if cfgFile == nil { // file not found, ask user for data
 		// TODO: add nice gui
-		fmt.Print("Email: ")
-		fmt.Scanln(&cfg.Email)
-		fmt.Print("Password: ")
-		fmt.Scanln(&cfg.Password)
+		fmt.Println("--- Copy token from app and paste ---")
+		fmt.Print("Token: ")
+		fmt.Scanln(&cfg.Token)
 		var jsonFile *os.File
 		jsonFile, err = dir.QueryFolders(configdir.Global)[0].Create("config.json")
 		if err != nil {
@@ -62,7 +60,7 @@ func main() {
 		log.Panicln(err)
 	}
 	defer g.Close()
-	sess, err := discordgo.New(cfg.Email, cfg.Password)
+	sess, err := discordgo.New(cfg.Token)
 	if err != nil {
 		panic(err)
 	}

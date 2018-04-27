@@ -58,21 +58,13 @@ func (iv *InputView) sendMessage(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (iv *InputView) formatNewMessage(message string) string {
-	members := iv.State.CurrentGuild.Members
 	mentions := regexp.MustCompile(usernameRegex).FindAllString(message, -1)
 
 	replaceMessage := message
 	for _, mention := range mentions {
-		for _, member := range members {
-			memberNick := member.Nick
-			if memberNick == "" {
-				memberNick = member.User.Username
-			}
-
-			if strings.TrimPrefix(mention, "@") == memberNick {
-				replaceMessage = strings.Replace(replaceMessage, mention, member.User.Mention(), -1)
-				break
-			}
+		member := iv.State.GuildMap[iv.State.CurrentGuild.ID].Members[strings.TrimPrefix(mention, "@")]
+		if member != nil {
+			replaceMessage = strings.Replace(replaceMessage, mention, member.User.Mention(), -1)
 		}
 	}
 	return replaceMessage

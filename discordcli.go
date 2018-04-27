@@ -8,6 +8,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/feelfreelinux/discordcli/discordcli/gui"
+	"github.com/gordonklaus/portaudio"
 	"github.com/jroimartin/gocui"
 	"github.com/shibukawa/configdir"
 )
@@ -60,6 +61,9 @@ func main() {
 		log.Panicln(err)
 	}
 	defer g.Close()
+
+	portaudio.Initialize()
+	defer portaudio.Terminate()
 	sess, err := discordgo.New(cfg.Token)
 	if err != nil {
 		panic(err)

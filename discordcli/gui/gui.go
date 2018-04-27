@@ -10,6 +10,7 @@ const (
 	channelsView = "channels"
 	inputView    = "input"
 	messagesView = "messages"
+	voiceView    = "voice"
 )
 
 /*
@@ -19,6 +20,7 @@ type MainView struct {
 	channels *ChannelsView
 	messages *MessagesView
 	input    *InputView
+	voice    *VoiceView
 	State    *core.State
 }
 
@@ -59,6 +61,9 @@ func CreateMainView(dgsession *discordgo.Session, ui *gocui.Gui) error {
 		input: &InputView{
 			State: state,
 		},
+		voice: &VoiceView{
+			State: state,
+		},
 	}
 	ui.SetManagerFunc(mainView.layout)
 	err := mainView.bindKeys()
@@ -74,12 +79,18 @@ func (mv *MainView) setHandlers() error {
 }
 
 func (mv *MainView) changeChannel(channel *discordgo.Channel) {
-	mv.State.CurrentChannel = channel
 	guild, _ := mv.State.Session.State.Guild(channel.GuildID)
 	mv.State.CurrentGuild = guild
-	messages, _ := mv.State.Session.ChannelMessages(channel.ID, 50, "", "", "")
-	mv.messages.clearBuffer()
-	mv.messages.showMessages(messages)
+
+	if channel.Type == discordgo.ChannelTypeGuildVoice {
+		mv.voice.joinVoice(channel)
+	} else {
+		mv.State.CurrentChannel = channel
+		messages, _ := mv.State.Session.ChannelMessages(channel.ID, 50, "", "", "")
+
+		mv.messages.clearBuffer()
+		mv.messages.showMessages(messages)
+	}
 }
 
 // Messy function just for testing, raw index will be replaced with correct implementation

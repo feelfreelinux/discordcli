@@ -81,6 +81,9 @@ func (cv *ChannelsView) joinChannel(g *gocui.Gui, v *gocui.View) error {
 			switch cv.State.GuildMap[cv.GuildMapPositionIDS[pos]].Channel.Type {
 			case discordgo.ChannelTypeGuildText:
 				cv.channelChangedCallback(cv.State.GuildMap[cv.GuildMapPositionIDS[pos]].Channel)
+
+			case discordgo.ChannelTypeGuildVoice:
+				cv.channelChangedCallback(cv.State.GuildMap[cv.GuildMapPositionIDS[pos]].Channel)
 			}
 		}
 	}

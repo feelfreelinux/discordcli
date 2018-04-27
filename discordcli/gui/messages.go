@@ -60,8 +60,14 @@ func (mv *MessagesView) formatMessage(message *discordgo.Message) string {
 
 func (mv *MessagesView) formatAuthorNickname(message *discordgo.Message) string {
 	author, err := mv.State.Session.State.Member(mv.State.CurrentGuild.ID, message.Author.ID)
-	if err == nil && len(author.Nick) > 0 {
-		return core.GetColoredNick(author.Nick, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
+
+	if err == nil {
+		memberNick := author.Nick
+		if memberNick == "" {
+			memberNick = message.Author.Username
+		}
+		mv.State.GuildMap[mv.State.CurrentGuild.ID].Members[memberNick] = author
+		return core.GetColoredNick(memberNick, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
 	}
 	return core.GetColoredNick(message.Author.Username, mv.State.Session.State.UserColor(message.Author.ID, message.ChannelID))
 

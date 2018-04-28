@@ -24,7 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-
 [[constraint]]
   branch = "master"
   name = "github.com/bwmarrin/discordgo"
@@ -51,3 +50,7 @@
 [[constraint]]
   version = "v1.5"
   name = "gopkg.in/kyokomi/emoji.v1"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gordonklaus/portaudio"

@@ -28,42 +28,48 @@ type VoiceConnection struct {
 }
 
 func CreateVoiceConnection(session *discordgo.Session, channel *discordgo.Channel) *VoiceConnection {
-	h, _ := portaudio.DefaultHostApi()
-	device := h.Devices[7]
+	h, o := portaudio.DefaultHostApi()
+	chk(o)
+	device := h.Devices[17]
 	voiceConnection, _ := session.ChannelVoiceJoin(channel.GuildID, channel.ID, false, false)
 	voiceConn := &VoiceConnection{}
 	voiceConn.voiceConnection = voiceConnection
-	sendChannel := make(chan []int16, 2)
-	go SendPCM(voiceConnection, sendChannel)
-
+	voiceConn.sendChannel = make(chan []int16, 2)
+	voiceConn.recvChannel = make(chan *discordgo.Packet, 2)
+	go SendPCM(voiceConnection, voiceConn.sendChannel)
+	go ReceivePCM(voiceConnection, voiceConn.recvChannel)
 	inputParams := portaudio.LowLatencyParameters(device, nil)
-	inputParams.Input.Channels = channels
+	inputParams.Input.Channels = 1
 	inputParams.Output.Channels = 0
 	inputParams.SampleRate = float64(frameRate)
 	inputParams.FramesPerBuffer = frameSize
 
 	outputParams := portaudio.LowLatencyParameters(nil, device)
-	outputParams.Input.Channels = channels
-	outputParams.Output.Channels = 0
+	outputParams.Input.Channels = 0
+	outputParams.Output.Channels = 1
 	outputParams.SampleRate = float64(frameRate)
 	outputParams.FramesPerBuffer = frameSize
 
 	voiceConn.outputBuffer = make([]int16, 960)
 
-	inputStream, _ := portaudio.OpenStream(inputParams, voiceConn.processInput)
-	voiceConn.inputStream = inputStream
-	outputStream, _ := portaudio.OpenStream(outputParams, &voiceConn.outputBuffer)
-	voiceConn.outputStream = outputStream
+	voiceConn.inputStream, _ = portaudio.OpenStream(inputParams, voiceConn.processInput)
+	voiceConn.outputStream, _ = portaudio.OpenStream(outputParams, &voiceConn.outputBuffer)
 
 	return voiceConn
 }
 
+func chk(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func (vc *VoiceConnection) Start() {
 	vc.closed = false
-	vc.inputStream.Start()
 	vc.voiceConnection.Speaking(true)
-	//vc.outputStream.Start()
-	//go vc.processOutput()
+	go vc.processOutput()
+	vc.inputStream.Start()
+	vc.outputStream.Start()
 
 }
 
@@ -91,7 +97,7 @@ func (vc *VoiceConnection) processOutput() {
 		if ok {
 			pcm := make([]int16, 960)
 			for x, d := range data.PCM {
-				pcm[x] = d
+				pcm[x] = int16(float32(d) * 0.4)
 			}
 			vc.outputBuffer = pcm
 			vc.outputStream.Write()

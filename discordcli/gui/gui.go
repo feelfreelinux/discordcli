@@ -97,6 +97,7 @@ func (mv *MainView) changeChannel(channel *discordgo.Channel) {
 func (mv *MainView) readyHandler(s *discordgo.Session, event *discordgo.Ready) {
 	mv.channels.channelChangedCallback = mv.changeChannel
 	mv.channels.drawGuilds(s.State.Guilds)
+	mv.State.Session.UpdateStatus(0, "discordcli")
 }
 
 func (mv *MainView) messageHandler(s *discordgo.Session, event *discordgo.MessageCreate) {
@@ -108,7 +109,7 @@ func (mv *MainView) messageHandler(s *discordgo.Session, event *discordgo.Messag
 }
 
 func (mv *MainView) bindKeys() error {
-	if err := mv.State.Gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+	if err := mv.State.Gui.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, mv.quit); err != nil {
 		return err
 	}
 
@@ -130,7 +131,11 @@ func (mv *MainView) bindKeys() error {
 	return nil
 }
 
-func quit(g *gocui.Gui, v *gocui.View) error {
+func (mv *MainView) quit(g *gocui.Gui, v *gocui.View) error {
+	if mv.voice.VoiceConnection != nil {
+		mv.voice.VoiceConnection.Stop()
+	}
+	mv.State.Session.Close()
 	return gocui.ErrQuit
 }
 

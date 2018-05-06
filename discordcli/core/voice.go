@@ -2,8 +2,10 @@ package core
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gordonklaus/portaudio"
@@ -11,10 +13,11 @@ import (
 )
 
 const (
-	channels  int = 1                   // 1 for mono, 2 for stereo
-	frameRate int = 48000               // audio sampling rate
-	frameSize int = 960                 // uint16 size of each audio frame
-	maxBytes  int = (frameSize * 2) * 2 // max size of opus data
+	channels         int   = 1           // 1 for mono, 2 for stereo
+	frameRate        int   = 48000       // audio sampling rate
+	frameSize        int   = 960         // uint16 size of each audio frame
+	maxBytes         int   = (frameSize) // max size of opus data
+	talkTriggerMilis int64 = 500
 )
 
 type VoiceConnection struct {
@@ -25,17 +28,21 @@ type VoiceConnection struct {
 	closed          bool
 	sendChannel     chan []int16
 	recvChannel     chan *discordgo.Packet
+	talkTrigger     int64
+	speaking        bool
 }
 
 func CreateVoiceConnection(session *discordgo.Session, channel *discordgo.Channel) *VoiceConnection {
 	h, o := portaudio.DefaultHostApi()
 	chk(o)
-	device := h.Devices[17]
+	device := h.Devices[7]
 	voiceConnection, _ := session.ChannelVoiceJoin(channel.GuildID, channel.ID, false, false)
 	voiceConn := &VoiceConnection{}
 	voiceConn.voiceConnection = voiceConnection
 	voiceConn.sendChannel = make(chan []int16, 2)
 	voiceConn.recvChannel = make(chan *discordgo.Packet, 2)
+	voiceConn.talkTrigger = 0
+	voiceConn.speaking = false
 	go SendPCM(voiceConnection, voiceConn.sendChannel)
 	go ReceivePCM(voiceConnection, voiceConn.recvChannel)
 	inputParams := portaudio.LowLatencyParameters(device, nil)
@@ -64,9 +71,24 @@ func chk(e error) {
 	}
 }
 
+func (vc *VoiceConnection) isSpeaking(speaking bool) {
+	if speaking {
+		vc.talkTrigger = makeTimestamp()
+		if !vc.speaking {
+			vc.speaking = true
+			vc.talkTrigger = makeTimestamp()
+			go vc.voiceConnection.Speaking(true)
+		}
+	} else {
+		if vc.speaking && makeTimestamp() > (vc.talkTrigger+talkTriggerMilis) {
+			vc.speaking = false
+			go vc.voiceConnection.Speaking(false)
+		}
+	}
+}
 func (vc *VoiceConnection) Start() {
 	vc.closed = false
-	vc.voiceConnection.Speaking(true)
+	vc.speaking = false
 	go vc.processOutput()
 	vc.inputStream.Start()
 	vc.outputStream.Start()
@@ -80,12 +102,25 @@ func (vc *VoiceConnection) Stop() {
 	vc.closed = true
 }
 
+func random(min, max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max-min) + min
+}
+
 func (vc *VoiceConnection) processInput(in []int16) {
 	data := make([]int16, 960)
 	for x, d := range in {
 		data[x] = d / 4
+		if data[x] > 2000 {
+			vc.isSpeaking(true)
+		} else {
+			vc.isSpeaking(false)
+		}
 	}
-	vc.sendChannel <- data
+
+	if vc.speaking {
+		vc.sendChannel <- data
+	}
 }
 
 func (vc *VoiceConnection) processOutput() {
@@ -93,16 +128,21 @@ func (vc *VoiceConnection) processOutput() {
 		if vc.closed {
 			return
 		}
+		pcm := make([]int16, 960)
 		data, ok := <-vc.recvChannel
 		if ok {
-			pcm := make([]int16, 960)
 			for x, d := range data.PCM {
-				pcm[x] = int16(float32(d) * 0.4)
+				pcm[x] = d * 2
 			}
-			vc.outputBuffer = pcm
-			vc.outputStream.Write()
+
 		}
+		vc.outputBuffer = pcm
+		vc.outputStream.Write()
 	}
+}
+
+func makeTimestamp() int64 {
+	return time.Now().UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 }
 
 var (

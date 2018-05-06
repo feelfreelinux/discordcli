@@ -52,6 +52,8 @@ func loadConfig() (cfg config, err error) {
 }
 
 func main() {
+	portaudio.Initialize()
+	defer portaudio.Terminate()
 	cfg, cfgErr := loadConfig()
 	if cfgErr != nil {
 		log.Panicf("Failed to load config %v", cfgErr)
@@ -62,8 +64,6 @@ func main() {
 	}
 	defer g.Close()
 
-	portaudio.Initialize()
-	defer portaudio.Terminate()
 	sess, err := discordgo.New(cfg.Token)
 	if err != nil {
 		panic(err)
